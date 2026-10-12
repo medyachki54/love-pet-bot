@@ -7,7 +7,7 @@ import uvicorn
 import threading
 
 # Вставьте сюда ваш токен от BotFather
-API_TOKEN = 'ВАШ_ТОКЕН_ОТ_BOTFATHER'
+API_TOKEN = '8777182579:AAHWevczdBTlDOBwEYJQWAsDU1v4hM1GxVg'
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
