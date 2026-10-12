@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 
-# Токен берётся из переменных окружения (безопасно)
+# Токен берётся из переменных окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не установлен! Добавь его в Environment Variables на хостинге.")
@@ -16,10 +16,9 @@ dp = Dispatcher()
 
 DATA_FILE = "pet_data.json"
 
-# Начальные данные по умолчанию
 default_data = {
     "is_active": False,
-    "users": [],  # Список участников
+    "users": [],
     "total_messages": 0,
     "current_exp": 0,
     "max_exp": 250,
@@ -27,7 +26,6 @@ default_data = {
     "pet_name": None
 }
 
-# Создаем постоянные кнопки под чатом
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="/pet"), KeyboardButton(text="/profile")],
@@ -37,7 +35,6 @@ main_keyboard = ReplyKeyboardMarkup(
 )
 
 def load_data():
-    """Загрузка прогресса из файла"""
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -51,7 +48,6 @@ def load_data():
     return default_data.copy()
 
 def save_data(data):
-    """Сохранение прогресса в файл"""
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
@@ -61,7 +57,6 @@ def save_data(data):
 pet_game = load_data()
 
 def add_exp(amount=1):
-    """Добавление опыта и проверка уровней"""
     pet_game["total_messages"] += amount
     pet_game["current_exp"] += amount
     
@@ -75,7 +70,6 @@ def add_exp(amount=1):
     save_data(pet_game)
     return leveled_up
 
-# 1. Приветствие по команде /start
 @dp.message(Command("start"))
 @dp.business_message(Command("start"))
 async def cmd_start(message: Message):
@@ -86,7 +80,6 @@ async def cmd_start(message: Message):
         reply_markup=main_keyboard
     )
 
-# 2. Совместный запуск по команде /start_pet
 @dp.message(Command("start_pet"))
 @dp.business_message(Command("start_pet"))
 async def accept_pet(message: Message):
@@ -122,7 +115,6 @@ async def accept_pet(message: Message):
             reply_markup=main_keyboard
         )
 
-# 3. Команда для выбора имени питомца (доступна с 5 уровня)
 @dp.message(Command("name"))
 @dp.business_message(Command("name"))
 async def set_pet_name(message: Message):
@@ -145,7 +137,6 @@ async def set_pet_name(message: Message):
 
     await message.answer(f"🎉 Ура! Вы назвали своего питомца: **{pet_name}** 🍼💖 Теперь он растет под этим именем!", reply_markup=main_keyboard)
 
-# 4. Автоматический подсчет сообщений из Telegram Business
 @dp.business_message()
 async def track_business_messages(message: Message):
     if not pet_game["is_active"]:
@@ -170,7 +161,6 @@ async def track_business_messages(message: Message):
                 reply_markup=main_keyboard
             )
 
-# 5. Проверка статуса питомца (/pet)
 @dp.message(Command("pet"))
 @dp.business_message(Command("pet"))
 async def show_pet_status(message: Message):
@@ -200,7 +190,6 @@ async def show_pet_status(message: Message):
         reply_markup=main_keyboard
     )
 
-# 6. Команда профиля (/profile)
 @dp.message(Command("profile"))
 @dp.business_message(Command("profile"))
 async def show_profile(message: Message):
@@ -231,8 +220,8 @@ async def show_profile(message: Message):
 
 async def main():
     logging.basicConfig(level=logging.INFO)
-    await bot.delete_webhook(drop_pending_updates=False)
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot, handle_signals=False)
 
 if __name__ == "__main__":
     asyncio.run(main())
